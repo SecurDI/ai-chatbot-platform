@@ -70,12 +70,12 @@ export async function GET(request: NextRequest) {
     const userInfo: EntraIDUserInfo = idToken as EntraIDUserInfo;
     logger.info(`User info from ID token: ${JSON.stringify(userInfo)}`);
 
-    const user = await createOrUpdateUser(userInfo.oid, userInfo.preferred_username, userInfo.name, "end-user");
+    const user = await createOrUpdateUser(userInfo.sub, userInfo.preferred_username || userInfo.email || "unknown", userInfo.name || userInfo.preferred_username || userInfo.email || "Unknown User", "end-user");
     logger.info(`User created/updated in DB: ${user.id}`);
 
     // Create session
     const response = NextResponse.redirect(url.origin);
-    const sessionResult = await createSession(user.id, userInfo.oid, userInfo.preferred_username, userInfo.name, user.role);
+    const sessionResult = await createSession(user.id, userInfo.sub, userInfo.preferred_username || userInfo.email || "unknown", userInfo.name || userInfo.preferred_username || userInfo.email || "Unknown User", user.role);
 
     if (sessionResult.success && sessionResult.token) {
       response.cookies.set(AUTH_CONFIG.COOKIE_NAME, sessionResult.token, {

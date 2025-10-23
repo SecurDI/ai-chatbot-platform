@@ -62,7 +62,7 @@ export default function AdminUsersPage() {
         setSelectedUser(null);
       } else {
         alert(data.error || "Failed to update user role");
-      }m
+      }
     } catch (error) {
       console.error("Failed to update user:", error);
       alert("Failed to update user role");

@@ -70,7 +70,8 @@ export default function AdminEntraSettingsPage() {
       const payload = { ...formData };
       // Only send clientSecret if it's changed from the masked value
       if (payload.clientSecret === "********") {
-        delete payload.clientSecret;
+        const { clientSecret, ...payloadWithoutSecret } = payload;
+        Object.assign(payload, payloadWithoutSecret);
       }
 
       const response = await fetch("/api/admin/entra-config", {

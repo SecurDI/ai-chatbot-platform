@@ -195,7 +195,7 @@ export async function validateIDToken(idToken: string, nonce: string) {
   const client = await getOIDCClient();
 
   try {
-    const claims = client.decodeIdToken(idToken) as any;
+    const claims = (client as any).decodeIdToken(idToken);
 
     // Validate nonce
     if (claims.nonce !== nonce) {

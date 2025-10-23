@@ -4,7 +4,7 @@
  */
 
 import { sql } from "@vercel/postgres";
-import { ChatSession, ChatMessage } from "../../frontend/types/database";
+import { ChatSession, ChatMessage } from "../../../types/database";
 import { logger } from "../utils/logger";
 
 /**
@@ -18,7 +18,7 @@ export async function createChatSession(userId: string, title: string): Promise<
   try {
     logger.info("💬 Creating new chat session", { userId, title });
     const result = await sql<ChatSession>`
-      INSERT INTO chat_sessions (user_id, title, created_at, updated_at)
+      INSERT INTO chat_sessions (user_id, session_name, created_at, updated_at)
       VALUES (${userId}, ${title}, NOW(), NOW())
       RETURNING *;
     `;
@@ -88,7 +88,7 @@ export async function addChatMessage(
   try {
     logger.info("💬 Adding new chat message", { sessionId, userId, role });
     const result = await sql<ChatMessage>`
-      INSERT INTO chat_messages (session_id, user_id, content, role, created_at)
+      INSERT INTO chat_messages (session_id, user_id, content, message_type, timestamp)
       VALUES (${sessionId}, ${userId}, ${content}, ${role}, NOW())
       RETURNING *;
     `;
@@ -116,7 +116,7 @@ export async function getChatSessionMessages(sessionId: string): Promise<ChatMes
     const result = await sql<ChatMessage>`
       SELECT * FROM chat_messages
       WHERE session_id = ${sessionId}
-      ORDER BY created_at ASC;
+      ORDER BY timestamp ASC;
     `;
     return result.rows;
   } catch (error) {

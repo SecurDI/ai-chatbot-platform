@@ -4,7 +4,7 @@
  */
 
 import { logger } from "@/lib/utils/logger";
-import { UserRole } from "@/backend/types/database";
+import { UserRole } from "../../../types/database";
 
 /**
  * Session data stored in Vercel KV

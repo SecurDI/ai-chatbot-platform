@@ -8,7 +8,7 @@ import { kv } from "../kv/connection";
 import { Session, JWTPayload, SessionResult } from "./types";
 import { AUTH_CONFIG } from "./auth-config";
 import { logger } from "../utils/logger";
-import { UserRole } from "../../types/database";
+import { UserRole } from "../../../types/database";
 import { IncomingMessage } from 'http'; // Import IncomingMessage
 import { parse } from 'cookie'; // Import parse from cookie
 
@@ -62,6 +62,7 @@ export async function createSession(
       email,
       display_name: displayName,
       role,
+      organization_id: null, // TODO: Add organization support
       created_at: now,
       expires_at: expiresAt,
       last_activity: now,
@@ -85,7 +86,7 @@ export async function createSession(
       email,
       display_name: displayName,
       role,
-    } as JWTPayload)
+    } as any)
       .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()
       .setExpirationTime(`${AUTH_CONFIG.SESSION_TIMEOUT}s`)

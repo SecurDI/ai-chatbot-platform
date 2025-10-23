@@ -13,12 +13,16 @@ export async function GET(request: Request) {
     const redirectUri = getRedirectUri();
     logger.info(`Using redirect URI: ${redirectUri}`);
 
-    const { url, state, nonce } = await generateAuthorizationUrl(redirectUri);
+    const { url, state, nonce, code_verifier } = await generateAuthorizationUrl();
     logger.info(`Generated authorization URL: ${url}`);
 
     // Store state and nonce in secure, httpOnly cookies
     const response = NextResponse.redirect(url);
-    await storeOIDCState(response, state, nonce);
+    await storeOIDCState(state, {
+      nonce,
+      code_verifier,
+      redirect_uri: redirectUri,
+    });
 
     logger.info("Redirecting to Entra ID for authentication");
     return response;

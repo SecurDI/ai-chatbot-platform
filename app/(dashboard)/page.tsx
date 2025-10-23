@@ -29,7 +29,7 @@ export default function DashboardPage() {
         </header>
 
         {/* Dashboard Content */}
-        <main className="flex-1 overflow-auto p-8">
+        <div className="flex-1 overflow-auto p-8">
           <div className="max-w-7xl mx-auto space-y-8">
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -151,8 +151,8 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   );
 }

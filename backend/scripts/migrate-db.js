@@ -14,7 +14,7 @@ async function runMigrations() {
 
   try {
     // Read the migration file
-    const migrationPath = path.join(__dirname, '..', 'DATABASE_MIGRATIONS.sql');
+    const migrationPath = path.join(__dirname, '..', '..', 'DATABASE_MIGRATIONS.sql');
     const migrationSQL = fs.readFileSync(migrationPath, 'utf8');
 
     // Remove all comments first

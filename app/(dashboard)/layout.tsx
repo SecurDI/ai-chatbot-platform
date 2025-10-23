@@ -36,7 +36,12 @@ export default function DashboardLayout({
     return null;
   }
 
-  const navItems = [
+  const navItems: Array<{
+    href: string;
+    icon: any;
+    label: string;
+    children: Array<{ href: string; label: string }>;
+  }> = [
     { href: "/", icon: LayoutDashboard, label: "Dashboard", children: [] },
     { href: "/chat", icon: MessageSquare, label: "Chat", children: [] },
   ];

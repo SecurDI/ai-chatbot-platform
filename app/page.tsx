@@ -40,7 +40,12 @@ export default function HomePage() {
   // If user is logged in, show dashboard with sidebar
   if (user) {
 
-    const navItems = [
+    const navItems: Array<{
+      href: string;
+      icon: any;
+      label: string;
+      children: Array<{ href: string; label: string }>;
+    }> = [
       { href: "/", icon: LayoutDashboard, label: "Dashboard", children: [] },
       { href: "/chat", icon: MessageSquare, label: "Chat", children: [] },
     ];

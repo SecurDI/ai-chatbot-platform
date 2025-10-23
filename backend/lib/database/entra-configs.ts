@@ -4,9 +4,9 @@
  */
 
 import { sql } from "@vercel/postgres";
-import { logger } from "@/lib/utils/logger";
-import { encrypt, decrypt, maskSecret } from "@/lib/security/encryption";
-import type { EntraConfig, EntraConfigSafe, Organization } from "@/backend/types/database";
+import { logger } from "../utils/logger";
+import { encrypt, decrypt, maskSecret } from "../security/encryption";
+import type { EntraConfig, EntraConfigSafe, Organization } from "../../../types/database";
 
 /**
  * Get Entra ID configuration for an organization (with decrypted secret)
