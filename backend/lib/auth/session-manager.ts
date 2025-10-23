@@ -8,7 +8,9 @@ import { kv } from "../kv/connection";
 import { Session, JWTPayload, SessionResult } from "./types";
 import { AUTH_CONFIG } from "./auth-config";
 import { logger } from "../utils/logger";
-import { UserRole } from "@/backend/types/database";
+import { UserRole } from "../../types/database";
+import { IncomingMessage } from 'http'; // Import IncomingMessage
+import { parse } from 'cookie'; // Import parse from cookie
 
 /**
  * Get JWT secret as Uint8Array
@@ -228,6 +230,27 @@ export async function getSession(token: string): Promise<Session | null> {
     return session;
   } catch (error) {
     logger.error("Failed to get session", { error });
+    return null;
+  }
+}
+
+/**
+ * Extract JWT token from incoming HTTP request cookies.
+ *
+ * @param req - The IncomingMessage object from a Node.js HTTP server or WebSocket handshake.
+ * @returns The JWT token string, or null if not found.
+ */
+export function getTokenFromRequest(req: IncomingMessage): string | null {
+  const cookieHeader = req.headers.cookie;
+  if (!cookieHeader) {
+    return null;
+  }
+
+  try {
+    const cookies = parse(cookieHeader);
+    return cookies[AUTH_CONFIG.COOKIE_NAME] || null;
+  } catch (error) {
+    logger.error("Failed to parse cookies from request", { error });
     return null;
   }
 }

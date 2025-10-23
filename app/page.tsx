@@ -1,6 +1,6 @@
 "use client";
 import { useAuth } from "@/hooks/use-auth";
-import { MessageSquare, Shield, Zap, CheckCircle, Menu, X, User, LogOut, LayoutDashboard, Users, FileText } from "lucide-react";
+import { MessageSquare, Shield, Zap, CheckCircle, Menu, X, User, LogOut, LayoutDashboard, Users, FileText, Settings as SettingsIcon, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,6 +14,7 @@ import Link from "next/link";
 export default function HomePage() {
   const { user, isLoading, logout, isAdmin } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [settingsOpen, setSettingsOpen] = useState(false); // New state for settings dropdown
 
   // Console logging for theme debugging
   console.log("HomePage rendered - Theme debugging:");
@@ -38,6 +39,31 @@ export default function HomePage() {
 
   // If user is logged in, show dashboard with sidebar
   if (user) {
+
+    const navItems = [
+      { href: "/", icon: LayoutDashboard, label: "Dashboard", children: [] },
+      { href: "/chat", icon: MessageSquare, label: "Chat", children: [] },
+    ];
+
+    if (isAdmin()) {
+      navItems.push({ href: "/admin/users", icon: Users, label: "User Management", children: [] });
+    }
+
+    const settingsChildren = [
+      { href: "/settings/account", label: "Account Settings" },
+    ];
+
+    if (isAdmin()) {
+      settingsChildren.push({ href: "/admin/entra-settings", label: "Entra ID Settings" });
+    }
+
+    navItems.push({
+      href: "#", // Default link for Settings
+      icon: SettingsIcon,
+      label: "Settings",
+      children: settingsChildren,
+    });
+
     return (
       <div className="min-h-screen bg-securdi-dark-bg glow-background flex">
         {/* Sidebar */}
@@ -48,9 +74,9 @@ export default function HomePage() {
         >
           <div className="p-6 border-b-2 border-[#7dd3c0]">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <img src="/SecurDI-logo-white-1-1.png" alt="SecurDI Logo" className="w-10 h-10" />
-                <h1 className="text-xl font-bold text-securdi-text-light tracking-tight">SecurDI</h1>
+              <div className="flex items-center">
+                <Image src="/SecurDI-logo-white-1-1.png" alt="SecurDI Logo" width={64} height={64} className="w-16 h-16" />
+                {/* Removed the 'SecurDI' text next to the logo */}
               </div>
               <button
                 onClick={() => setSidebarOpen(false)}
@@ -63,36 +89,57 @@ export default function HomePage() {
 
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-2">
-            <a
-              href="/"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#7dd3c0]/20 text-[#7dd3c0] font-semibold border-2 border-[#7dd3c0] shadow-sm shadow-[#7dd3c0]/20 transition-all hover:bg-[#7dd3c0]/30"
-            >
-              <LayoutDashboard className="w-5 h-5" />
-              <span>Dashboard</span>
-            </a>
-            <a
-              href="/chat"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-[#7dd3c0]/20 hover:text-[#7dd3c0] transition-all duration-200"
-            >
-              <MessageSquare className="w-5 h-5" />
-              <span>Chat</span>
-            </a>
-            <a
-              href="/approvals"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-[#7dd3c0]/20 hover:text-[#7dd3c0] transition-all duration-200"
-            >
-              <FileText className="w-5 h-5" />
-              <span>Approvals</span>
-            </a>
-            {isAdmin() && (
-              <a
-                href="/admin/users"
-                className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-[#7dd3c0]/20 hover:text-[#7dd3c0] transition-all duration-200"
-              >
-                <Users className="w-5 h-5" />
-                <span>User Management</span>
-              </a>
-            )}
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = window.location.pathname === item.href || item.children.some(child => window.location.pathname.startsWith(child.href));
+              return (
+                <div key={item.label}>
+                  <a
+                    href={item.children.length > 0 ? "#" : item.href}
+                    onClick={(e) => {
+                      if (item.children.length > 0) {
+                        e.preventDefault();
+                        setSettingsOpen(!settingsOpen);
+                      } else {
+                        // For actual navigation items, close sidebar on click
+                        setSidebarOpen(false);
+                      }
+                    }}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${
+                      isActive
+                        ? "bg-[#7dd3c0]/20 text-[#7dd3c0] border-2 border-[#7dd3c0] shadow-sm shadow-[#7dd3c0]/20"
+                        : "text-gray-300 hover:bg-[#7dd3c0]/20 hover:text-[#7dd3c0]"
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    <span>{item.label}</span>
+                    {item.children.length > 0 && (
+                      settingsOpen ? <ChevronUp className="ml-auto w-4 h-4" /> : <ChevronDown className="ml-auto w-4 h-4" />
+                    )}
+                  </a>
+                  {item.children.length > 0 && settingsOpen && (
+                    <div className="ml-8 mt-1 space-y-1">
+                      {item.children.map((child) => {
+                        const isChildActive = window.location.pathname.startsWith(child.href);
+                        return (
+                          <a
+                            key={child.href}
+                            href={child.href}
+                            className={`flex items-center gap-3 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                              isChildActive
+                                ? "bg-[#7dd3c0]/20 text-[#7dd3c0] border-2 border-[#7dd3c0] shadow-sm shadow-[#7dd3c0]/20"
+                                : "text-gray-300 hover:bg-[#7dd3c0]/20 hover:text-[#7dd3c0]"
+                            }`}
+                          >
+                            <span>{child.label}</span>
+                          </a>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </nav>
 
           {/* User Profile */}

@@ -1,7 +1,8 @@
 "use client";
 
+// CURSOR_IDENTIFIER_MAIN_DASHBOARD_LAYOUT_V1
 import { useAuth } from "@/hooks/use-auth";
-import { MessageSquare, LayoutDashboard, Users, FileText, User, LogOut, Menu, X, Settings as SettingsIcon } from "lucide-react";
+import { MessageSquare, LayoutDashboard, Users, FileText, User, LogOut, Menu, X, Settings as SettingsIcon, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 
@@ -15,6 +16,7 @@ export default function DashboardLayout({
   console.log("Rendering app/(dashboard)/layout.tsx");
   const { user, isLoading, logout, isAdmin } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [settingsOpen, setSettingsOpen] = useState(false); // New state for settings dropdown
   const pathname = usePathname();
 
   // Loading state
@@ -35,18 +37,28 @@ export default function DashboardLayout({
   }
 
   const navItems = [
-    { href: "/", icon: LayoutDashboard, label: "Dashboard" },
-    { href: "/chat", icon: MessageSquare, label: "Chat" },
-    { href: "/approvals", icon: FileText, label: "Approvals" },
-    { href: "/settings/account", icon: SettingsIcon, label: "Account Settings" },
+    { href: "/", icon: LayoutDashboard, label: "Dashboard", children: [] },
+    { href: "/chat", icon: MessageSquare, label: "Chat", children: [] },
   ];
 
   if (isAdmin()) {
-    navItems.push(
-      { href: "/admin/users", icon: Users, label: "User Management" },
-      { href: "/admin/entra-settings", icon: SettingsIcon, label: "Entra ID Settings" }
-    );
+    navItems.push({ href: "/admin/users", icon: Users, label: "User Management", children: [] });
   }
+
+  const settingsChildren = [
+    { href: "/settings/account", label: "Account Settings" },
+  ];
+
+  if (isAdmin()) {
+    settingsChildren.push({ href: "/admin/entra-settings", label: "Entra ID Settings" });
+  }
+
+  navItems.push({
+    href: "#", // Default link for Settings
+    icon: SettingsIcon,
+    label: "Settings",
+    children: settingsChildren,
+  });
 
   return (
     <div className="min-h-screen bg-securdi-dark-bg flex glow-background">
@@ -59,7 +71,7 @@ export default function DashboardLayout({
         <div className="p-6 border-b border-securdi-accent/20">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img src="/SecurDI-logo-white-1-1.png" alt="SecurDI Logo" className="w-16 h-16" />
+              <img src="/SecurDI-logo-white-1-1.png" alt="SecurDI Logo" className="w-24 h-24" />
             </div>
             <button
               onClick={() => setSidebarOpen(false)}
@@ -74,20 +86,52 @@ export default function DashboardLayout({
         <nav className="flex-1 p-4 space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname === item.href;
+            const isActive = pathname === item.href || item.children.some(child => pathname.startsWith(child.href));
             return (
-              <a
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${
-                  isActive
-                    ? "bg-securdi-accent/20 text-securdi-accent border border-securdi-accent/40 shadow-sm shadow-securdi-accent/20"
-                    : "text-gray-300 hover:bg-securdi-accent/20 hover:text-securdi-accent"
-                }`}
-              >
-                <Icon className="w-5 h-5" />
-                <span>{item.label}</span>
-              </a>
+              <div key={item.label}>
+                <a
+                  href={item.children.length > 0 ? "#" : item.href}
+                  onClick={(e) => {
+                    if (item.children.length > 0) {
+                      e.preventDefault();
+                      setSettingsOpen(!settingsOpen);
+                    } else {
+                      setSidebarOpen(false);
+                    }
+                  }}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${
+                    isActive
+                      ? "bg-securdi-accent/20 text-securdi-accent border border-securdi-accent/40 shadow-sm shadow-securdi-accent/20"
+                      : "text-gray-300 hover:bg-securdi-accent/20 hover:text-securdi-accent"
+                  }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span>{item.label}</span>
+                  {item.children.length > 0 && (
+                    settingsOpen ? <ChevronUp className="ml-auto w-4 h-4" /> : <ChevronDown className="ml-auto w-4 h-4" />
+                  )}
+                </a>
+                {item.children.length > 0 && settingsOpen && (
+                  <div className="ml-8 mt-1 space-y-1">
+                    {item.children.map((child) => {
+                      const isChildActive = pathname === child.href;
+                      return (
+                        <a
+                          key={child.href}
+                          href={child.href}
+                          className={`flex items-center gap-3 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                            isChildActive
+                              ? "bg-securdi-accent/20 text-securdi-accent border border-securdi-accent/40 shadow-sm shadow-securdi-accent/20"
+                              : "text-gray-300 hover:bg-securdi-accent/20 hover:text-securdi-accent"
+                          }`}
+                        >
+                          <span>{child.label}</span>
+                        </a>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             );
           })}
         </nav>
