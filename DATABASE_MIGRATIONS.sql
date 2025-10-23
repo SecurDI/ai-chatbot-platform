@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   entra_id VARCHAR(255) UNIQUE NOT NULL,
   email VARCHAR(255) NOT NULL,
-  display_name VARCHAR(255) NOT NULL,
+  display_name VARCHAR(512) NOT NULL, -- Increased length from 255 to 512
   role VARCHAR(50) NOT NULL CHECK (role IN ('admin', 'end-user')),
   created_at TIMESTAMP DEFAULT NOW(),
   last_login TIMESTAMP,

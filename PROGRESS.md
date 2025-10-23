@@ -135,6 +135,18 @@
   - [x] Role change modal
   - [x] Deactivate/Reactivate actions
   - [x] Admin cannot deactivate self
+- [x] API Documentation UI (`app/docs/page.tsx` & `app/api/docs/route.ts`)
+  - [x] Interactive Swagger-like documentation interface
+  - [x] All endpoints documented with request/response examples
+  - [x] Color-coded HTTP methods (GET, POST, PUT, DELETE)
+  - [x] Expandable/collapsible endpoint details
+  - [x] Copy-to-clipboard for code examples
+  - [x] Parameter tables showing type, location, and requirements
+  - [x] Authentication requirements clearly displayed
+  - [x] Search functionality across all endpoints
+  - [x] Sidebar navigation for API groups (Auth, Users, Chat, Approvals)
+  - [x] Mobile responsive dark theme design
+  - [x] Accessible at `/docs`
 - [x] Dashboard layout wrapper (`app/(dashboard)/layout.tsx`)
   - [x] Sidebar navigation
   - [x] Mobile responsive
@@ -153,6 +165,8 @@
 - `app/api/users/profile/route.ts` - Current user profile
 - `app/(dashboard)/admin/users/page.tsx` - Admin user management UI
 - `app/(dashboard)/layout.tsx` - Dashboard layout with sidebar
+- `app/docs/page.tsx` - Interactive API documentation UI
+- `app/api/docs/route.ts` - API directory endpoint
 - Updated `app/page.tsx` - Redesigned landing page and dashboard
 
 ---

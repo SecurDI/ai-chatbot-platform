@@ -1,0 +1,23 @@
+# Entra ID (Azure AD) Configuration
+AZURE_AD_TENANT_ID=your-tenant-id-here
+AZURE_AD_CLIENT_ID=your-client-id-here
+AZURE_AD_CLIENT_SECRET=your-client-secret-here
+
+# JWT Configuration
+JWT_SECRET=your-jwt-secret-here-minimum-32-characters
+
+# Application URLs
+NEXTAUTH_URL=http://localhost:3000
+
+# Database Configuration (if using external database)
+DATABASE_URL=your-database-url-here
+
+# Redis/KV Configuration (if using external Redis)
+KV_URL=your-kv-url-here
+KV_REST_API_URL=your-kv-rest-api-url-here
+KV_REST_API_TOKEN=your-kv-rest-api-token-here
+KV_REST_API_READ_ONLY_TOKEN=your-kv-read-only-token-here
+
+# Session Configuration
+SESSION_TIMEOUT=28800
+SESSION_REFRESH_THRESHOLD=3600

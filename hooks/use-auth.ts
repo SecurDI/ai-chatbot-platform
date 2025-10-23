@@ -1,115 +1,70 @@
-/**
- * useAuth Hook
- * React hook for accessing authentication state and methods
- */
-
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "@/stores/auth-store";
+import type { User } from "@/types/database"; // Assuming User type is defined
+
+interface AuthHook {
+  user: User | null;
+  isLoading: boolean;
+  login: () => void;
+  logout: () => void;
+  isAdmin: () => boolean;
+}
 
 /**
- * Auth hook providing authentication state and methods
+ * Custom hook for authentication.
+ * Manages user session state and provides login/logout functionality.
  *
- * @returns Auth state and methods
+ * @returns AuthHook - Object containing user, loading state, and auth actions
  */
-export function useAuth() {
-  const {
-    user,
-    isAuthenticated,
-    isLoading,
-    sessionExpiresAt,
-    setUser,
-    setSessionExpiry,
-    setLoading,
-    logout,
-    checkSession,
-  } = useAuthStore();
+export const useAuth = (): AuthHook => {
+  const { user, setUser, clearUser } = useAuthStore();
+  const [isLoading, setIsLoading] = useState(true);
 
-  /**
-   * Check session on mount
-   */
+  // Check session on component mount
   useEffect(() => {
-    checkSession();
-  }, [checkSession]);
-
-  /**
-   * Setup session refresh timer
-   * Refreshes session 1 hour before expiry
-   */
-  useEffect(() => {
-    if (!isAuthenticated || !sessionExpiresAt) {
-      return;
-    }
-
-    const checkAndRefresh = async () => {
-      const now = Date.now();
-      const timeUntilExpiry = sessionExpiresAt - now;
-      const oneHour = 60 * 60 * 1000;
-
-      // Refresh if less than 1 hour until expiry
-      if (timeUntilExpiry > 0 && timeUntilExpiry <= oneHour) {
-        try {
-          const response = await fetch("/api/auth/refresh", {
-            method: "POST",
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            if (data.expires_at) {
-              setSessionExpiry(data.expires_at);
-            }
-          }
-        } catch (error) {
-          console.error("Session refresh failed:", error);
+    const checkSession = async () => {
+      try {
+        const response = await fetch("/api/auth/session");
+        const data = await response.json();
+        if (data.success && data.user) {
+          setUser(data.user);
+        } else {
+          clearUser();
         }
-      }
-
-      // Auto-logout if session expired
-      if (timeUntilExpiry <= 0) {
-        logout();
+      } catch (error) {
+        console.error("Session check failed:", error);
+        clearUser();
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    // Check every 5 minutes
-    const interval = setInterval(checkAndRefresh, 5 * 60 * 1000);
+    checkSession();
+  }, [setUser, clearUser]);
 
-    // Check immediately
-    checkAndRefresh();
-
-    return () => clearInterval(interval);
-  }, [isAuthenticated, sessionExpiresAt, logout, setSessionExpiry]);
-
-  /**
-   * Login - redirects to login page
-   */
-  const login = useCallback(() => {
-    window.location.href = "/api/auth/login";
-  }, []);
-
-  /**
-   * Check if user is admin
-   */
-  const isAdmin = useCallback(() => {
-    return user?.role === "admin";
-  }, [user]);
-
-  /**
-   * Check if user is end-user
-   */
-  const isEndUser = useCallback(() => {
-    return user?.role === "end-user";
-  }, [user]);
-
-  return {
-    user,
-    isAuthenticated,
-    isLoading,
-    sessionExpiresAt,
-    login,
-    logout,
-    checkSession,
-    isAdmin,
-    isEndUser,
+  // Login function
+  const login = () => {
+    // Redirect to Entra ID login flow
+    window.location.href = "/auth/login";
   };
-}
+
+  // Logout function
+  const logout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      clearUser();
+      window.location.href = "/"; // Redirect to home page after logout
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
+  // Check if user is admin
+  const isAdmin = (): boolean => {
+    return user?.role === "admin";
+  };
+
+  return { user, isLoading, login, logout, isAdmin };
+};

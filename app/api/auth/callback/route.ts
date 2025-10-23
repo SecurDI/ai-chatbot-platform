@@ -1,134 +1,97 @@
-/**
- * OIDC Callback API route
- * Handles EntraID authentication callback
- * GET /api/auth/callback
- */
-
+import { exchangeCodeForTokens } from "@/backend/lib/auth/auth-config";
+import { consumeOIDCState, createSession } from "@/backend/lib/auth/session-manager";
+import { createOrUpdateUser } from "@/backend/lib/database/users";
+import { AUTH_CONFIG } from "@/backend/lib/auth/auth-config";
+import { logger } from "@/backend/lib/utils/logger";
+import { EntraIDUserInfo } from "@/backend/lib/auth/types";
 import { NextRequest, NextResponse } from "next/server";
-import { exchangeCodeForTokens } from "@/lib/auth/auth-config";
-import { consumeOIDCState, createSession } from "@/lib/auth/session-manager";
-import { createOrUpdateUser } from "@/lib/database/users";
-import { AUTH_CONFIG } from "@/lib/auth/auth-config";
-import { logger } from "@/lib/utils/logger";
-import { EntraIDUserInfo } from "@/lib/auth/types";
 
 /**
- * Handle OIDC callback from EntraID
- * Exchanges authorization code for tokens and creates session
- *
- * @param request - Next.js request object
- * @returns Redirect to dashboard or error page
+ * Handles the OAuth 2.0 callback from Entra ID.
+ * Exchanges the authorization code for tokens, validates state and nonce,
+ * creates/updates the user, and establishes a session.
  */
 export async function GET(request: NextRequest) {
+  logger.info("Callback route hit");
+
+  const url = new URL(request.url);
+  const code = url.searchParams.get("code");
+  const state = url.searchParams.get("state");
+
+  // Handle errors from Entra ID
+  const error = url.searchParams.get("error");
+  const errorDescription = url.searchParams.get("error_description");
+  if (error) {
+    logger.error(`Entra ID error: ${error} - ${errorDescription}`);
+    return NextResponse.redirect(`${url.origin}/login?error=${error}&error_description=${errorDescription}`);
+  }
+
+  if (!code) {
+    logger.warn("No authorization code found in callback");
+    return NextResponse.redirect(`${url.origin}/login?error=invalid_callback`);
+  }
+
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const code = searchParams.get("code");
-    const state = searchParams.get("state");
-    const error = searchParams.get("error");
-    const errorDescription = searchParams.get("error_description");
+    const redirectUri = new URL("/api/auth/callback", url.origin).toString();
+    logger.info(`Using redirect URI: ${redirectUri}`);
 
-    // Check for OAuth errors
-    if (error) {
-      logger.error("OAuth error in callback", { error, errorDescription });
-      return NextResponse.redirect(
-        new URL(`/login?error=${encodeURIComponent(errorDescription || error)}`, request.url)
-      );
-    }
+    // Consume and validate state and nonce - also retrieve code_verifier
+    const oidcState = await consumeOIDCState(state as string); // Pass the state string
 
-    // Validate required parameters
-    if (!code || !state) {
-      logger.error("Missing code or state in callback");
-      return NextResponse.redirect(
-        new URL("/login?error=invalid_callback", request.url)
-      );
-    }
-
-    // Retrieve and validate OIDC state (CSRF protection)
-    const oidcState = await consumeOIDCState(state);
     if (!oidcState) {
-      logger.error("Invalid or expired state", { state });
-      return NextResponse.redirect(
-        new URL("/login?error=invalid_state", request.url)
-      );
+      logger.error("OIDC state not found or expired");
+      return NextResponse.redirect(`${url.origin}/login?error=invalid_state`);
     }
 
-    // Exchange authorization code for tokens
-    const tokenSet = await exchangeCodeForTokens(
-      code,
-      oidcState.code_verifier,
-      oidcState.redirect_uri,
-      oidcState.nonce
-    );
+    const { nonce: expectedNonce, code_verifier, redirect_uri } = oidcState;
 
-    if (!tokenSet.id_token) {
-      logger.error("No ID token received");
-      return NextResponse.redirect(
-        new URL("/login?error=no_id_token", request.url)
-      );
+    const { idToken, accessToken, retrievedState, retrievedNonce } = await exchangeCodeForTokens(
+      code as string,
+      code_verifier as string,
+      redirectUri,
+      expectedNonce as string,
+      state as string
+    );
+    logger.info("Tokens exchanged successfully");
+
+    if (retrievedState !== state) {
+      logger.error(`State mismatch: Expected ${state}, Received ${retrievedState}`);
+      return NextResponse.redirect(`${url.origin}/login?error=invalid_state`);
     }
+    logger.info("State validated successfully");
 
-    // Decode ID token (already validated by openid-client during token exchange)
-    const claims = tokenSet.claims();
-    const userInfo: EntraIDUserInfo = {
-      sub: claims.sub as string,
-      email: (claims.email || claims.preferred_username) as string,
-      name: (claims.name || claims.given_name || claims.email) as string,
-    };
+    if (retrievedNonce !== expectedNonce) {
+      logger.error(`Nonce mismatch: Expected ${expectedNonce}, Received ${retrievedNonce}`);
+      return NextResponse.redirect(`${url.origin}/login?error=invalid_nonce`);
+    }
+    logger.info("Nonce validated successfully");
 
-    logger.info("User claims extracted", {
-      sub: userInfo.sub,
-      email: userInfo.email,
-      name: userInfo.name
-    });
+    // Get user info from ID token and create/update user in DB
+    const userInfo: EntraIDUserInfo = idToken as EntraIDUserInfo;
+    logger.info(`User info from ID token: ${JSON.stringify(userInfo)}`);
 
-    // Create or update user in database
-    const user = await createOrUpdateUser(
-      userInfo.sub,
-      userInfo.email,
-      userInfo.name
-    );
+    const user = await createOrUpdateUser(userInfo.oid, userInfo.preferred_username, userInfo.name, "end-user");
+    logger.info(`User created/updated in DB: ${user.id}`);
 
     // Create session
-    const sessionResult = await createSession(
-      user.id,
-      user.entra_id,
-      user.email,
-      user.display_name,
-      user.role
-    );
+    const response = NextResponse.redirect(url.origin);
+    const sessionResult = await createSession(user.id, userInfo.oid, userInfo.preferred_username, userInfo.name, user.role);
 
-    if (!sessionResult.success || !sessionResult.token) {
-      logger.error("Failed to create session", { userId: user.id });
-      return NextResponse.redirect(
-        new URL("/login?error=session_creation_failed", request.url)
-      );
+    if (sessionResult.success && sessionResult.token) {
+      response.cookies.set(AUTH_CONFIG.COOKIE_NAME, sessionResult.token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: AUTH_CONFIG.COOKIE_MAX_AGE,
+        path: "/",
+      });
+      logger.info(`Session cookie set for user: ${user.id}`);
     }
 
-    logger.info("User logged in successfully", {
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-    });
-
-    // Create response with session cookie
-    const dashboardUrl = new URL("/", request.url);
-    const response = NextResponse.redirect(dashboardUrl);
-
-    response.cookies.set({
-      name: AUTH_CONFIG.COOKIE_NAME,
-      value: sessionResult.token,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: AUTH_CONFIG.COOKIE_MAX_AGE,
-      path: "/",
-    });
-
+    logger.info(`Session created for user: ${user.id}`);
     return response;
-  } catch (error) {
-    logger.error("Callback processing failed", { error });
-    return NextResponse.redirect(
-      new URL("/login?error=authentication_failed", request.url)
-    );
+  } catch (error: any) {
+    logger.error(`Authentication callback failed: ${error.message}`);
+    const errorParam = error.message.includes("invalid_state") ? "invalid_state" : "authentication_failed";
+    return NextResponse.redirect(`${url.origin}/login?error=${errorParam}`);
   }
 }

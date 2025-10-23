@@ -24,7 +24,7 @@ export default function AdminUsersPage() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/users?page=${currentPage}&limit=20`);
+      const response = await fetch(`/users?page=${currentPage}&limit=20`);
       const data = await response.json();
 
       if (data.success) {
@@ -48,7 +48,7 @@ export default function AdminUsersPage() {
   const updateUserRole = async (userId: string, newRole: "admin" | "end-user") => {
     try {
       setActionLoading(true);
-      const response = await fetch(`/api/users/${userId}`, {
+      const response = await fetch(`/users/${userId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role: newRole }),
@@ -62,7 +62,7 @@ export default function AdminUsersPage() {
         setSelectedUser(null);
       } else {
         alert(data.error || "Failed to update user role");
-      }
+      }m
     } catch (error) {
       console.error("Failed to update user:", error);
       alert("Failed to update user role");
@@ -79,7 +79,7 @@ export default function AdminUsersPage() {
 
     try {
       setActionLoading(true);
-      const response = await fetch(`/api/users/${userId}`, {
+      const response = await fetch(`/users/${userId}`, {
         method: "DELETE",
       });
 
@@ -102,7 +102,7 @@ export default function AdminUsersPage() {
   const reactivateUser = async (userId: string) => {
     try {
       setActionLoading(true);
-      const response = await fetch(`/api/users/${userId}`, {
+      const response = await fetch(`/users/${userId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "reactivate" }),
@@ -133,8 +133,8 @@ export default function AdminUsersPage() {
   // Loading state
   if (isLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-securdi-dark-bg">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-securdi-accent"></div>
       </div>
     );
   }
@@ -142,27 +142,27 @@ export default function AdminUsersPage() {
   // Check admin access
   if (!user || !isAdmin()) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="min-h-screen flex items-center justify-center bg-securdi-dark-bg">
         <div className="text-center">
-          <Shield className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
-          <p className="text-gray-600">You need admin privileges to access this page.</p>
+          <Shield className="w-16 h-16 text-securdi-accent mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-securdi-text-light mb-2">Access Denied</h1>
+          <p className="text-gray-400">You need admin privileges to access this page.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-8">
+    <div className="min-h-screen bg-securdi-dark-bg wave-background p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">User Management</h1>
-          <p className="text-gray-600">Manage user roles and permissions</p>
+          <h1 className="text-4xl font-bold text-securdi-text-light mb-2">User Management</h1>
+          <p className="text-gray-400">Manage user roles and permissions</p>
         </div>
 
         {/* Search Bar */}
-        <div className="backdrop-blur-xl bg-white/70 border border-white/60 rounded-3xl p-6 mb-6 shadow-xl">
+        <div className="backdrop-blur-xl bg-securdi-dark-bg border border-securdi-accent/20 rounded-3xl p-6 mb-6 shadow-xl">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
@@ -170,45 +170,45 @@ export default function AdminUsersPage() {
               placeholder="Search users by name or email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+              className="w-full pl-12 pr-4 py-4 bg-securdi-dark-bg/50 border border-securdi-accent/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-securdi-accent focus:border-transparent text-securdi-text-light placeholder-gray-500"
             />
           </div>
         </div>
 
         {/* Users Table */}
-        <div className="backdrop-blur-xl bg-white/70 border border-white/60 rounded-3xl overflow-hidden shadow-xl">
+        <div className="backdrop-blur-xl bg-securdi-dark-bg border border-securdi-accent/20 rounded-3xl overflow-hidden shadow-xl">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gradient-to-r from-purple-50 to-blue-50 border-b border-gray-200">
+              <thead className="bg-securdi-accent/10 border-b border-securdi-accent/20">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">
                     User
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">
                     Role
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">
                     Last Login
                   </th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-right text-xs font-semibold text-gray-300 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-securdi-accent/20">
                 {filteredUsers.map((u) => (
-                  <tr key={u.id} className="hover:bg-gray-50/50 transition-colors">
+                  <tr key={u.id} className="hover:bg-securdi-accent/10 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg shadow-purple-500/30">
-                          <UserIcon className="w-5 h-5 text-white" />
+                        <div className="w-10 h-10 bg-securdi-accent rounded-full flex items-center justify-center shadow-lg shadow-securdi-accent/30">
+                          <UserIcon className="w-5 h-5 text-securdi-text-light" />
                         </div>
                         <div>
-                          <p className="font-semibold text-gray-900">{u.display_name}</p>
-                          <p className="text-sm text-gray-600">{u.email}</p>
+                          <p className="font-semibold text-securdi-text-light">{u.display_name}</p>
+                          <p className="text-sm text-gray-400">{u.email}</p>
                         </div>
                       </div>
                     </td>
@@ -216,8 +216,8 @@ export default function AdminUsersPage() {
                       <span
                         className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
                           u.role === "admin"
-                            ? "bg-purple-100 text-purple-700 border border-purple-200"
-                            : "bg-gray-100 text-gray-700 border border-gray-200"
+                            ? "bg-securdi-accent/10 text-securdi-accent border border-securdi-accent/20"
+                            : "bg-securdi-accent/10 text-gray-400 border border-securdi-accent/20"
                         }`}
                       >
                         {u.role === "admin" ? "Administrator" : "End User"}
@@ -227,15 +227,15 @@ export default function AdminUsersPage() {
                       <span
                         className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
                           u.is_active
-                            ? "bg-green-100 text-green-700 border border-green-200"
-                            : "bg-red-100 text-red-700 border border-red-200"
+                            ? "bg-securdi-accent/10 text-securdi-accent border border-securdi-accent/30"
+                            : "bg-red-500/10 text-red-400 border border-red-500/30"
                         }`}
                       >
-                        <span className={`w-1.5 h-1.5 rounded-full ${u.is_active ? "bg-green-500" : "bg-red-500"}`}></span>
+                        <span className={`w-1.5 h-1.5 rounded-full ${u.is_active ? "bg-securdi-accent" : "bg-red-400"}`}></span>
                         {u.is_active ? "Active" : "Inactive"}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-6 py-4 text-sm text-gray-400">
                       {u.last_login ? new Date(u.last_login).toLocaleDateString() : "Never"}
                     </td>
                     <td className="px-6 py-4 text-right">
@@ -246,28 +246,28 @@ export default function AdminUsersPage() {
                             setShowRoleModal(true);
                           }}
                           disabled={u.id === user.id || actionLoading}
-                          className="p-2 hover:bg-purple-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="p-2 hover:bg-securdi-accent/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           title="Change Role"
                         >
-                          <Shield className="w-4 h-4 text-purple-600" />
+                          <Shield className="w-4 h-4 text-securdi-accent" />
                         </button>
                         {u.is_active ? (
                           <button
                             onClick={() => deactivateUser(u.id)}
                             disabled={u.id === user.id || actionLoading}
-                            className="p-2 hover:bg-red-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="p-2 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             title="Deactivate User"
                           >
-                            <Trash2 className="w-4 h-4 text-red-600" />
+                            <Trash2 className="w-4 h-4 text-red-400" />
                           </button>
                         ) : (
                           <button
                             onClick={() => reactivateUser(u.id)}
                             disabled={actionLoading}
-                            className="p-2 hover:bg-green-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="p-2 hover:bg-securdi-accent/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             title="Reactivate User"
                           >
-                            <RefreshCw className="w-4 h-4 text-green-600" />
+                            <RefreshCw className="w-4 h-4 text-securdi-accent" />
                           </button>
                         )}
                       </div>
@@ -279,15 +279,15 @@ export default function AdminUsersPage() {
           </div>
 
           {/* Pagination */}
-          <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100/50 border-t border-gray-200 flex items-center justify-between">
-            <p className="text-sm text-gray-600">
+          <div className="px-6 py-4 bg-securdi-dark-bg/50 border-t border-securdi-accent/20 flex items-center justify-between">
+            <p className="text-sm text-gray-400">
               Page {currentPage} of {totalPages}
             </p>
             <div className="flex gap-2">
               <button
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                className="px-4 py-2 bg-securdi-dark-bg border border-securdi-accent/20 rounded-lg hover:bg-securdi-accent/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2 text-gray-300"
               >
                 <ChevronLeft className="w-4 h-4" />
                 Previous
@@ -295,7 +295,7 @@ export default function AdminUsersPage() {
               <button
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                className="px-4 py-2 bg-securdi-dark-bg border border-securdi-accent/20 rounded-lg hover:bg-securdi-accent/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2 text-gray-300"
               >
                 Next
                 <ChevronRight className="w-4 h-4" />
@@ -303,28 +303,29 @@ export default function AdminUsersPage() {
             </div>
           </div>
         </div>
+
       </div>
 
       {/* Role Change Modal */}
       {showRoleModal && selectedUser && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="backdrop-blur-xl bg-white/90 border border-white/60 rounded-3xl p-8 max-w-md w-full shadow-2xl">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Change User Role</h3>
-            <p className="text-gray-600 mb-6">
-              Update role for <strong>{selectedUser.display_name}</strong>
+          <div className="backdrop-blur-xl bg-securdi-dark-bg border border-securdi-accent/20 rounded-3xl p-8 max-w-md w-full shadow-2xl">
+            <h3 className="text-2xl font-bold text-securdi-text-light mb-4">Change User Role</h3>
+            <p className="text-gray-400 mb-6">
+              Update role for <strong className="text-securdi-text-light">{selectedUser.display_name}</strong>
             </p>
             <div className="space-y-3 mb-6">
               <button
                 onClick={() => updateUserRole(selectedUser.id, "admin")}
                 disabled={actionLoading || selectedUser.role === "admin"}
-                className="w-full p-4 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-2xl font-semibold hover:from-purple-600 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="w-full p-4 bg-securdi-accent text-securdi-text-light rounded-2xl font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 {selectedUser.role === "admin" ? "✓ Administrator (Current)" : "Make Administrator"}
               </button>
               <button
                 onClick={() => updateUserRole(selectedUser.id, "end-user")}
                 disabled={actionLoading || selectedUser.role === "end-user"}
-                className="w-full p-4 bg-gray-100 text-gray-700 rounded-2xl font-semibold hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="w-full p-4 bg-securdi-accent/10 text-gray-300 rounded-2xl font-semibold hover:bg-securdi-accent/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 {selectedUser.role === "end-user" ? "✓ End User (Current)" : "Make End User"}
               </button>
@@ -335,7 +336,7 @@ export default function AdminUsersPage() {
                 setSelectedUser(null);
               }}
               disabled={actionLoading}
-              className="w-full p-4 border border-gray-300 text-gray-700 rounded-2xl font-semibold hover:bg-gray-50 transition-all"
+              className="w-full p-4 border border-securdi-accent/30 text-gray-300 rounded-2xl font-semibold hover:bg-securdi-accent/10 transition-all"
             >
               Cancel
             </button>

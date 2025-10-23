@@ -1,65 +1,36 @@
-/**
- * Logout API route
- * Destroys user session and clears cookie
- * POST /api/auth/logout
- */
-
+import { destroySession } from "@/backend/lib/auth/session-manager";
+import { logger } from "@/backend/lib/utils/logger";
 import { NextRequest, NextResponse } from "next/server";
-import { getSessionToken } from "@/lib/auth/middleware";
-import { getSession, destroySession } from "@/lib/auth/session-manager";
-import { AUTH_CONFIG } from "@/lib/auth/auth-config";
-import { logger } from "@/lib/utils/logger";
+import { AUTH_CONFIG } from "@/backend/lib/auth/auth-config";
 
 /**
- * Handle user logout
- * Destroys session in KV and clears session cookie
- *
- * @param request - Next.js request object
- * @returns Success response with cleared cookie
+ * POST /api/auth/logout
+ * Logs out the current user by deleting their session
  */
 export async function POST(request: NextRequest) {
   try {
-    const token = getSessionToken(request);
-
+    const token = request.cookies.get(AUTH_CONFIG.COOKIE_NAME)?.value;
+    
     if (token) {
-      // Get session to log user info
+      // Get session to find session ID
+      const { getSession } = await import("@/backend/lib/auth/session-manager");
       const session = await getSession(token);
-
+      
       if (session) {
-        // Destroy session
         await destroySession(session.id);
-        logger.info("User logged out", {
-          userId: session.user_id,
-          email: session.email,
-        });
       }
     }
 
-    // Create response and clear session cookie
-    const response = NextResponse.json({
-      success: true,
-      message: "Logged out successfully",
-    });
+    // Clear the session cookie
+    const response = NextResponse.json({ success: true });
+    response.cookies.delete(AUTH_CONFIG.COOKIE_NAME);
 
-    response.cookies.set({
-      name: AUTH_CONFIG.COOKIE_NAME,
-      value: "",
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 0, // Expire immediately
-      path: "/",
-    });
-
+    logger.info("User logged out successfully");
     return response;
-  } catch (error) {
-    logger.error("Logout failed", { error });
-
+  } catch (error: any) {
+    logger.error(`Logout failed: ${error.message}`);
     return NextResponse.json(
-      {
-        success: false,
-        error: "Logout failed",
-      },
+      { success: false, error: "Logout failed" },
       { status: 500 }
     );
   }
