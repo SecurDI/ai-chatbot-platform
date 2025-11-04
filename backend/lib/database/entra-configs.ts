@@ -76,7 +76,6 @@ export async function getEntraConfigSafe(
       redirect_uri: config.redirect_uri,
       created_at: config.created_at,
       updated_at: config.updated_at,
-      is_valid: config.is_valid,
     };
   } catch (error) {
     logger.error("Failed to get safe Entra config", { error, organizationId });
