@@ -71,7 +71,7 @@ export async function getEntraConfigSafe(
       id: config.id,
       organization_id: config.organization_id,
       client_id: config.client_id,
-      client_secret_masked: maskSecret(),
+     // client_secret_masked: maskSecret(),
       tenant_id: config.tenant_id,
       redirect_uri: config.redirect_uri,
       created_at: config.created_at,
