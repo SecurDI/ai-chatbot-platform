@@ -31,6 +31,7 @@ export interface EntraConfig {
 
 export interface EntraConfigSafe extends Omit<EntraConfig, "client_secret"> {
   client_secret?: string;
+  client_secret_masked?: string;
 }
 
 export interface ChatSession {
