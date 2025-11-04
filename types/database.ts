@@ -16,15 +16,13 @@ export interface Organization {
   created_at: string;
 }
 
-export interface EntraConfig {
+export interface EntraConfigSafe {
   id: string;
   organization_id: string;
   tenant_id: string;
   client_id: string;
-  client_secret: string;
-  client_secret_encrypted: string;
+  client_secret_masked: string;
   redirect_uri: string;
-  domain: string | null;
   created_at: string;
   updated_at: string;
 }
