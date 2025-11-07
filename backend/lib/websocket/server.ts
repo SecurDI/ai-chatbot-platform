@@ -3,12 +3,17 @@
  * Handles real-time chat communication with authentication
  */
 
-import { WebSocketServer, WebSocket } from "ws";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// Ensure we're using the Node.js WebSocket (not DOM)
+
+import { WebSocketServer } from "ws";
+import type WebSocket from "ws"; 
+
 import { IncomingMessage } from "http";
 import { verifySession, getTokenFromRequest } from "../auth/session-manager";
 import { addChatMessage, getChatSessionById } from "../database/chat";
 import { logger } from "../utils/logger";
-import { WebSocketMessage, WebSocketConnection, WebSocketState } from "../../types/database";
+import { WebSocketMessage, WebSocketConnection, WebSocketState } from "../../../types/database";
 
 /**
  * WebSocket server instance
@@ -37,7 +42,8 @@ export function initializeWebSocketServer(server: any): void {
   wss = new WebSocketServer({ 
     server,
     path: "/api/websocket",
-    verifyClient: async (info) => {
+    verifyClient: async (info: { origin: string; secure: boolean; req: import("http").IncomingMessage }) => {
+
       try {
         // Extract token from query parameters or cookies
         const url = new URL(info.req.url || "", `http://${info.req.headers.host}`);
@@ -94,12 +100,12 @@ function handleWebSocketConnection(ws: WebSocket, req: IncomingMessage): void {
   const connectionId = `${user.id}_${Date.now()}_${Math.random().toString(36).substring(7)}`;
   
   const connection: WebSocketConnection = {
-    id: connectionId,
-    userId: user.id,
-    sessionId: "", // Will be set when user joins a session
-    socket: ws,
-    lastActivity: Date.now(),
-  };
+  userId: user.id,
+  sessionId: "",
+  socket: ws as unknown as WebSocket,
+  lastActivity: Date.now(),
+};
+
 
   wsState.connections.set(connectionId, connection);
 

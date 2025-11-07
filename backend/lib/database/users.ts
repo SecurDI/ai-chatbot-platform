@@ -4,7 +4,7 @@
  */
 
 import { Pool, QueryResult } from "pg";
-import { User, UserRole } from "../types/database";
+import { User, UserRole } from "../../../types/database";
 import { logger } from "../utils/logger";
 import { sql } from "@vercel/postgres"; // Import sql directly from @vercel/postgres
 

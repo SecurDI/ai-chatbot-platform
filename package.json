@@ -37,6 +37,7 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
+    "@types/ws": "^8.18.1",
     "eslint": "9.38.0",
     "eslint-config-next": "16.0.0"
   }

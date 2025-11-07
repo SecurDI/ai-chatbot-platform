@@ -74,8 +74,11 @@ export async function getEntraConfigSafe(
       client_secret_masked: maskSecret(),
       tenant_id: config.tenant_id,
       redirect_uri: config.redirect_uri,
+      domain: config.domain,
       created_at: config.created_at,
       updated_at: config.updated_at,
+      last_tested_at: config.last_tested_at,
+      is_valid: config.is_valid,
     };
   } catch (error) {
     logger.error("Failed to get safe Entra config", { error, organizationId });
@@ -148,6 +151,8 @@ export async function upsertEntraConfig(
       updated_at: config.updated_at,
       last_tested_at: config.last_tested_at,
       is_valid: config.is_valid,
+      domain: config.domain,
+
     };
   } catch (error) {
     logger.error("Failed to upsert Entra config", { error, organizationId });
@@ -224,6 +229,7 @@ export async function updateEntraConfig(
       updated_at: config.updated_at,
       last_tested_at: config.last_tested_at,
       is_valid: config.is_valid,
+      domain: config.domain,
     };
   } catch (error) {
     logger.error("Failed to update Entra config", { error, organizationId });

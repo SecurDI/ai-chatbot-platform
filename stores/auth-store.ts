@@ -1,14 +1,5 @@
 import { create } from "zustand";
-import { UserRole } from "@/types/database";
-
-interface User {
-  id: string;
-  display_name: string;
-  email: string;
-  role: UserRole;
-  created_at: string;
-  last_login: string | null;
-}
+import type { User } from "@/types/database"; // ✅ Import the shared User type
 
 interface AuthState {
   user: User | null;

@@ -1,3 +1,5 @@
+import type WebSocket from "ws";
+
 export type UserRole = "admin" | "end-user";
 
 export interface User {
@@ -8,6 +10,7 @@ export interface User {
   created_at: string;
   last_login: string | null;
   is_active: boolean;
+  entra_id: string | null;
 }
 
 export interface Organization {
@@ -16,20 +19,23 @@ export interface Organization {
   created_at: string;
 }
 
-export interface EntraConfigSafe {
+export interface EntraConfig {
   id: string;
   organization_id: string;
   tenant_id: string;
   client_id: string;
-  client_secret_masked: string;
+  client_secret: string;
+  client_secret_encrypted: string;
   redirect_uri: string;
+  domain: string | null;
   created_at: string;
   updated_at: string;
+  is_valid: boolean | null;
+  last_tested_at: string | null;
 }
 
-export interface EntraConfigSafe extends Omit<EntraConfig, "client_secret"> {
-  client_secret?: string;
-  client_secret_masked?: string;
+export interface EntraConfigSafe extends Omit<EntraConfig, "client_secret" | "client_secret_encrypted"> {
+  client_secret_masked: string;
 }
 
 export interface ChatSession {
@@ -49,6 +55,7 @@ export interface ChatMessage {
   message_type: "user" | "assistant" | "system";
   metadata: any;
   timestamp: string;
+  created_at: string;
 }
 
 // WebSocket Types
@@ -62,8 +69,10 @@ export interface WebSocketMessage {
   messageId?: string;
 }
 
+import type { WebSocket as WsWebSocket } from "ws";
+
 export interface WebSocketConnection {
-  id: string;
+  id?: string;
   userId: string;
   sessionId: string;
   socket: WebSocket;

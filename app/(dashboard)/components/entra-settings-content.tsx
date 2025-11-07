@@ -38,7 +38,7 @@ export default function EntraSettingsContent() {
         setFormData({
           tenantId: data.data.tenant_id,
           clientId: data.data.client_id,
-          clientSecret: data.data.client_secret ? "********" : "", // Mask secret
+          clientSecret: data.data.client_secret_masked ? "********" : "", // Mask secret
           redirectUri: data.data.redirect_uri,
           domain: data.data.domain || "",
         });
@@ -175,7 +175,7 @@ export default function EntraSettingsContent() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-400">Client Secret</label>
-                <p className="mt-1 text-lg text-white">{entraConfig.client_secret ? "********" : "Not configured"}</p>
+                <p className="mt-1 text-lg text-white">{entraConfig.client_secret_masked ? "********" : "Not configured"}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-400">Redirect URI</label>
@@ -277,7 +277,7 @@ export default function EntraSettingsContent() {
                     value={formData.clientSecret}
                     onChange={handleChange}
                     className="w-full p-4 bg-[#0A0A0A]/50 border-2 border-[#7dd3c0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7dd3c0] focus:border-transparent text-white pr-12"
-                    placeholder={entraConfig?.client_secret ? "********" : "Enter client secret"}
+                    placeholder={entraConfig?.client_secret_masked ? "********" : "Enter client secret"}
                   />
                   <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                 </div>

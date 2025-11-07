@@ -224,8 +224,10 @@ export function useChat() {
             session_id: message.sessionId,
             user_id: message.userId,
             content: message.content,
-            role: message.role,
+            message_type: message.role || "user",
             created_at: message.timestamp,
+            metadata: {},
+            timestamp: message.timestamp || new Date().toISOString(),
           });
         }
         break;
