@@ -10,6 +10,7 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
+  output: 'standalone',
   // Point to frontend directory for Next.js app structure
   distDir: '.next',
   pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
